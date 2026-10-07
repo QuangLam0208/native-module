@@ -10,7 +10,8 @@ Mỗi module là một thư mục trong repo `native-module`:
 native-module/
 ├── README.md
 ├── native-toast/
-│   ├── expo-module.config.json   Khai báo module cho Autolinking (iOS + Android)
+│   ├── expo-module.config.json   Khai báo module cho Expo Autolinking (iOS)
+│   ├── react-native.config.js    Khai báo module cho React Native CLI Autolinking (Android)
 │   ├── package.json              Tên package, entry point, danh sách file phân phối
 │   ├── index.ts                  API TypeScript dùng chung cho cả hai nền tảng
 │   ├── README.md
@@ -38,8 +39,8 @@ native-module/
 ## `package.json`
 
 `name` là tên dùng khi import. `main` trỏ thẳng tới mã nguồn TypeScript, Metro biên dịch khi
-bundle nên module không cần bước build riêng. `files` phải liệt kê cả `ios`, `android` và
-`expo-module.config.json`, nếu thiếu thì bản cài về không liên kết được native.
+bundle nên module không cần bước build riêng. `files` phải liệt kê cả `ios`, `android`,
+`expo-module.config.json` và `react-native.config.js`, nếu thiếu thì bản cài về không liên kết được native.
 
 ```json
 {
@@ -48,7 +49,13 @@ bundle nên module không cần bước build riêng. `files` phải liệt kê 
   "description": "Native toast for iOS and Android",
   "main": "index.ts",
   "types": "index.ts",
-  "files": ["index.ts", "ios", "android", "expo-module.config.json"],
+  "files": [
+    "index.ts",
+    "ios",
+    "android",
+    "expo-module.config.json",
+    "react-native.config.js"
+  ],
   "peerDependencies": {
     "expo": "*"
   },
@@ -59,18 +66,41 @@ bundle nên module không cần bước build riêng. `files` phải liệt kê 
 
 ## `expo-module.config.json`
 
-Autolinking đọc file này để biết class nào là module cho từng nền tảng.
+File này dùng cho **Expo Modules Autolinking (iOS)**.
 
-- Phía iOS: giá trị trong `apple.modules` phải trùng tên **class Swift**.
-- Phía Android: giá trị trong `android.modules` phải là **fully-qualified class name** của class `ReactPackage`.
+Vì phía iOS viết bằng Swift kế thừa lớp `Module` của Expo Modules API (`class NativeToastModule: Module`), Expo Autolinking sẽ đọc `apple.modules` để liên kết module.
 
 ```json
 {
-  "platforms": ["apple", "android"],
-  "apple": { "modules": ["NativeToastModule"] },
-  "android": { "modules": ["com.nativetoast.NativeToastPackage"] }
+  "platforms": ["apple"],
+  "apple": {
+    "modules": ["NativeToastModule"]
+  }
 }
 ```
+
+> **Lưu ý quan trọng về Android:**
+> Phía Android trong repo này dùng **React Native Bridge** thuần (`ReactContextBaseJavaModule` + `ReactPackage`), **không** kế thừa lớp `expo.modules.kotlin.modules.Module`.
+> Do đó, **không** khai báo `"android"` trong `expo-module.config.json`. Nếu khai báo class `ReactPackage` vào `android.modules`, compiler Kotlin của Expo (`:expo:compileReleaseKotlin`) sẽ báo lỗi:
+> `Type mismatch: inferred type is 'Class<...Package>', but 'Class<out Module>' was expected`
+> Việc liên kết Android được tách riêng cho React Native CLI Autolinking xử lý qua `react-native.config.js`.
+
+## `react-native.config.js`
+
+File này cấu hình cho **React Native CLI Autolinking (Android)**.
+
+```javascript
+module.exports = {
+  dependency: {
+    platforms: {
+      ios: null, // Vô hiệu hóa autolink RN CLI trên iOS để tránh xung đột với Expo Autolinking
+    },
+  },
+};
+```
+
+- Phía Android: React Native CLI sẽ tự động quét các class triển khai `ReactPackage` trong thư mục `android/src/main/java/` và đăng ký vào `PackageList.java` khi biên dịch ứng dụng.
+- Phía iOS: Đặt `ios: null` để ngăn React Native CLI cố gắng autolink podspec trên iOS (việc này đã do Expo Autolinking đảm nhiệm qua `expo-module.config.json`).
 
 ## `ios/<Tên>.podspec`
 

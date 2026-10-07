@@ -20,7 +20,8 @@ Toast là một thông báo ngắn, không chặn thao tác của người dùng
 
 ```text
 native-toast/
-├── expo-module.config.json       Khai báo module cho Autolinking (iOS + Android)
+├── expo-module.config.json       Khai báo module cho Expo Autolinking (iOS)
+├── react-native.config.js        Khai báo module cho React Native CLI Autolinking (Android)
 ├── package.json
 ├── index.ts                      API TypeScript
 ├── ios/

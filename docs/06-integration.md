@@ -74,7 +74,7 @@ Sau mỗi lần sửa mã trong repo, chạy lại lệnh trên để sao chép 
 
 | Hạng mục | Quy định |
 | :--- | :--- |
-| Liên kết native | Tự động qua Autolinking dựa trên `expo-module.config.json`. Không chỉnh sửa thủ công `Podfile`, `AppDelegate`, `settings.gradle`, hay `MainApplication`. |
+| Liên kết native | Tự động qua Autolinking: Expo Autolinking qua `expo-module.config.json` cho iOS và React Native CLI Autolinking qua `react-native.config.js` cho Android. Không chỉnh sửa thủ công `Podfile`, `AppDelegate`, `settings.gradle`, hay `MainApplication`. |
 | Quyền hệ thống | Khai báo trong `AndroidManifest.xml` của module (ví dụ `ACCESS_NETWORK_STATE`) hoặc qua config plugin của Expo. |
 | Môi trường chạy | Development build hoặc bản release. Expo Go không hỗ trợ. |
 | Thay đổi mã Swift / Java | Bắt buộc build lại native (`run:ios` hoặc `run:android`). Reload Metro không áp dụng thay đổi native. |
@@ -83,17 +83,20 @@ Sau mỗi lần sửa mã trong repo, chạy lại lệnh trên để sao chép 
 
 ## Kiểm tra Autolinking đã nhận module
 
-**Cho iOS:**
+**Cho iOS (Expo Autolinking):**
 ```bash
 npx expo-modules-autolinking resolve --platform apple
 ```
 Kết quả phải có mục của module với tên pod tương ứng, đường dẫn podspec nằm trong `node_modules`.
 
-**Cho Android:**
+**Cho Android (React Native CLI Autolinking):**
 ```bash
-npx expo-modules-autolinking resolve --platform android
+npx react-native config
 ```
-Kết quả phải liệt kê package name của module (ví dụ `com.nativedevicehelper.DeviceHelperPackage`), đường dẫn `build.gradle` nằm trong `node_modules`.
+Kết quả JSON sẽ hiển thị các package Android trong mục `dependencies`.
+Ngoài ra, sau khi ứng dụng chạy prebuild/build, có thể kiểm tra trực tiếp file sinh tự động tại:
+`android/app/build/generated/rncli/src/main/java/com/facebook/react/PackageList.java`
+File này phải chứa câu lệnh khởi tạo các package của module (ví dụ: `new NativeToastPackage()`, `new DeviceHelperPackage()`, `new NativeDatePickerPackage()`).
 
 ## Tương thích iOS 27
 

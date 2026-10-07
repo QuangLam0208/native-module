@@ -21,7 +21,8 @@ Module cho biết thiết bị có kết nối mạng hay không, đang dùng lo
 
 ```text
 native-network-status/
-├── expo-module.config.json       Khai báo module cho Autolinking (iOS + Android)
+├── expo-module.config.json       Khai báo module cho Expo Autolinking (iOS)
+├── react-native.config.js        Khai báo module cho React Native CLI Autolinking (Android)
 ├── package.json
 ├── index.ts                      API TypeScript
 ├── ios/

@@ -17,7 +17,7 @@ Bộ tài liệu mô tả cách phát triển, phân phối và tích hợp nati
 | Tài liệu | Nội dung |
 | :--- | :--- |
 | [1. Kiến trúc và các kiểu tương tác](01-architecture.md) | Ba tầng của một lời gọi, thread model, bốn kiểu tương tác JavaScript ↔ native |
-| [2. Cấu trúc và khai báo module](02-module-structure.md) | Thư mục của một module, `package.json`, `expo-module.config.json`, podspec, `build.gradle` |
+| [2. Cấu trúc và khai báo module](02-module-structure.md) | Thư mục của một module, `package.json`, `expo-module.config.json`, `react-native.config.js`, podspec, `build.gradle` |
 | [3. Tầng native Swift (iOS)](03-swift-layer.md) | API của Expo Modules, Promise, Record, Enumerable, sự kiện, luồng thực thi, báo lỗi |
 | [4. Tầng native Java (Android)](04-java-layer.md) | `ReactContextBaseJavaModule`, Constants, Promise, Event Emitter, UI thread |
 | [5. Tầng TypeScript](05-typescript-layer.md) | Khuôn mẫu `index.ts`, xử lý đa nền tảng, callback kết hợp Promise, bọc sự kiện |

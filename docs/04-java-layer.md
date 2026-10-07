@@ -99,7 +99,7 @@ public class NativeToastPackage implements ReactPackage {
 }
 ```
 
-Class `ReactPackage` là đầu mối Autolinking của Android đọc qua `expo-module.config.json`.
+Class `ReactPackage` là đầu mối Autolinking của Android. React Native CLI Autolinking sẽ tự động nhận diện class này (thông qua `react-native.config.js` của module) và đăng ký vào `PackageList.java` khi biên dịch app.
 
 ## Hằng số đồng bộ (getConstants)
 
@@ -192,4 +192,4 @@ sub.remove()
 | UI thread | `.runOnQueue(.main)` | `UiThreadUtil.runOnUiThread(...)` |
 | Phát sự kiện | `sendEvent("onX", data)` | `emit("onX", data)` qua RCTDeviceEventEmitter |
 | Báo lỗi | `throw Exception(name:description:)` | `promise.reject("CODE", "msg", e)` |
-| Đăng ký Autolinking | `expo-module.config.json → apple.modules` | `expo-module.config.json → android.modules` |
+| Đăng ký Autolinking | `expo-module.config.json → apple.modules` | `react-native.config.js → PackageList.java` (RN CLI) |

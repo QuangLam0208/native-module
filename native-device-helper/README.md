@@ -21,7 +21,8 @@ Module cung cấp model máy, phiên bản hệ điều hành, dung lượng RAM
 
 ```text
 native-device-helper/
-├── expo-module.config.json      Khai báo module cho Autolinking (iOS + Android)
+├── expo-module.config.json      Khai báo module cho Expo Autolinking (iOS)
+├── react-native.config.js       Khai báo module cho React Native CLI Autolinking (Android)
 ├── package.json
 ├── index.ts                     API TypeScript
 ├── ios/

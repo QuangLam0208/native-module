@@ -31,7 +31,7 @@ Mỗi module cần một màn hình trong ứng dụng để gọi từng hàm v
 | :--- | :--- | :--- | :--- |
 | `native-toast` | Bốn loại toast, thời lượng | Toast hiển thị chuẩn UI thread | Lỗi duration âm |
 | `native-alert` | Alert hai và ba nút, callbacks | AlertDialog confirm, neutral, cancel | Gọi liên tiếp khi alert trước chưa đóng |
-| `native-date-picker` | Sáu trường hợp chọn, theme | Chưa có bản Android | Thiết bị thật Android |
+| `native-date-picker` | Sáu trường hợp chọn, theme | Date/Time dialogs (DatePickerDialog, TimePickerDialog) | Range picker liên tiếp trên Android |
 | `native-device-helper` | Model, OS, RAM | Model, OS, RAM, pin, sạc | Sự kiện pin vật lý (cần cắm/rút sạc thật) |
 | `native-network-status` | `getStatus` Wi-Fi | `getStatus`, sự kiện mạng | Chuyển đổi mạng 4G/5G thật |
 
@@ -44,8 +44,8 @@ Mỗi module cần một màn hình trong ứng dụng để gọi từng hàm v
 | `Cannot find module '<tên-module>'` khi typecheck hoặc bundle | Chưa cài package | Chạy lệnh `pnpm add` tại [Tích hợp vào ứng dụng](06-integration.md) |
 | `isAvailable` là `false` trên iOS hoặc Android | Chưa prebuild lại hoặc chưa build native sau khi cài module | `npx expo prebuild --clean` rồi build lại (`run:ios` hoặc `run:android`) |
 | Module không được Autolinking nhận (iOS) | Thiếu hoặc sai `expo-module.config.json`; tên class không khớp mục `apple.modules` | Đối chiếu tên class Swift với file cấu hình |
-| Module không được Autolinking nhận (Android) | Thiếu `android.modules` trong `expo-module.config.json` hoặc sai tên package/class `ReactPackage` | Kiểm tra chuỗi fully-qualified trong `android.modules` |
-| Bản cài về thiếu thư mục `ios/` hoặc `android/` | Trường `"files"` trong `package.json` của module không liệt kê đủ | Bổ sung `"ios"` và `"android"` vào `"files"` |
+| Module không được Autolinking nhận (Android) | Thiếu file `react-native.config.js` hoặc package chưa được thêm vào `PackageList.java` | Bổ sung `react-native.config.js` (`platforms: { ios: null }`) và kiểm tra `PackageList.java` |
+| Bản cài về thiếu thư mục `ios/` hoặc `android/` | Trường `"files"` trong `package.json` của module không liệt kê đủ | Bổ sung `"ios"`, `"android"`, `"react-native.config.js"` vào `"files"` |
 | Build lỗi không tìm thấy file native của module sau khi cập nhật | Cấu hình native còn trỏ tới đường dẫn commit cũ | Chạy `npx expo prebuild --clean` rồi build lại |
 | Metro báo `spawn ... ENOENT` sau khi cài hoặc cập nhật package | Tiến trình Metro đang chạy còn giữ đường dẫn cũ trong `node_modules` | Khởi động lại Metro |
 | Jest báo `Cannot use import statement outside a module` tại `index.ts` của module | Jest không biên dịch mã TypeScript nằm trong `node_modules` | Thêm tên module vào `transformIgnorePatterns` |
@@ -54,6 +54,7 @@ Mỗi module cần một màn hình trong ứng dụng để gọi từng hàm v
 
 | Hiện tượng | Nguyên nhân | Cách xử lý |
 | :--- | :--- | :--- |
+| `Execution failed for task ':expo:compileReleaseKotlin'` với lỗi: `Type mismatch: inferred type is 'Class<...Package>', but 'Class<out Module>' was expected` | Khai báo class Java `ReactPackage` vào `android.modules` trong `expo-module.config.json`. Expo Modules Autolinking chỉ chấp nhận các module kế thừa `Module` của Expo | Chỉ khai báo `"apple"` trong `expo-module.config.json`. Tách việc liên kết Android sang React Native CLI Autolinking bằng file `react-native.config.js` |
 | `Duplicate class ... found in modules` | Tồn tại đồng thời cả file Java và Kotlin cùng tên class trong `android/src/main/java/...` | Xóa bỏ file thừa, chỉ giữ một ngôn ngữ cho class đó |
 | `package com.xxx does not exist` | Sai `namespace` trong `build.gradle` hoặc sai thư mục package `src/main/java/...` | Đồng nhất namespace và cấu trúc thư mục package |
 | `compileSdkVersion` mismatch | App dùng SDK mới hơn thư viện khai báo cố định | Sử dụng hàm helper `getExtOrDefault` trong `build.gradle` |

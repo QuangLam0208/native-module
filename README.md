@@ -12,7 +12,7 @@ Mỗi module là một thư mục độc lập trong repo này và được cài
 | :--- | :--- | :--- | :--- |
 | `native-toast` | Hiển thị toast bốn loại: normal, success, warning, error | iOS · Android | [README](native-toast/README.md) |
 | `native-alert` | Hộp thoại alert hai hoặc ba nút, mỗi nút một callback | iOS · Android | [README](native-alert/README.md) |
-| `native-date-picker` | Chọn ngày, giờ, ngày giờ, hoặc một khoảng từ – đến | iOS | [README](native-date-picker/README.md) |
+| `native-date-picker` | Chọn ngày, giờ, ngày giờ, hoặc một khoảng từ – đến | iOS · Android | [README](native-date-picker/README.md) |
 | `native-device-helper` | Model máy, phiên bản hệ điều hành, RAM, pin, sự kiện pin | iOS · Android | [README](native-device-helper/README.md) |
 | `native-network-status` | Trạng thái kết nối mạng và sự kiện khi mạng thay đổi | iOS · Android | [README](native-network-status/README.md) |
 
@@ -74,7 +74,7 @@ npx expo run:ios
 npx expo run:android
 ```
 
-Module được liên kết tự động qua Autolinking, không cần chỉnh sửa thủ công `Podfile`, `AppDelegate`, `settings.gradle` hay `MainApplication`.
+Module được liên kết tự động qua Autolinking (Expo Autolinking cho iOS và React Native CLI Autolinking cho Android), không cần chỉnh sửa thủ công `Podfile`, `AppDelegate`, `settings.gradle` hay `MainApplication`.
 
 **Dự án dùng Jest** cần thêm tên các module đã cài vào danh sách ngoại lệ của `transformIgnorePatterns` trong `jest.config.js`, vì module phân phối dưới dạng mã TypeScript.
 
@@ -112,7 +112,7 @@ NativeAlert.show({
 
 ### native-date-picker
 
-Chọn một khoảng ngày để lọc dữ liệu (iOS):
+Chọn một khoảng ngày để lọc dữ liệu (iOS & Android):
 
 ```tsx
 import { NativeDatePicker } from "native-date-picker"
@@ -167,7 +167,8 @@ const unsubscribe = NetworkStatus.addListener((state) => {
 
 ```text
 <tên-module>/
-├── expo-module.config.json   Khai báo module cho Autolinking (iOS + Android)
+├── expo-module.config.json   Khai báo module cho Expo Autolinking (iOS)
+├── react-native.config.js    Khai báo module cho React Native CLI Autolinking (Android)
 ├── package.json              Tên package, entry point, danh sách file phân phối
 ├── index.ts                  API TypeScript
 ├── README.md
