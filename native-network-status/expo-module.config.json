@@ -1,5 +1,6 @@
 {
-  "platforms": ["apple", "android"],
-  "apple": { "modules": ["NetworkStatusModule"] },
-  "android": { "modules": ["com.nativenetworkstatus.NetworkStatusPackage"] }
+  "platforms": ["apple"],
+  "apple": {
+    "modules": ["NetworkStatusModule"]
+  }
 }

@@ -1,5 +1,6 @@
 {
-  "platforms": ["apple", "android"],
-  "apple": { "modules": ["NativeDatePickerModule"] },
-  "android": { "modules": ["com.nativedatepicker.NativeDatePickerPackage"] }
+  "platforms": ["apple"],
+  "apple": {
+    "modules": ["NativeDatePickerModule"]
+  }
 }

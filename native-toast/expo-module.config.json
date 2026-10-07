@@ -1,5 +1,6 @@
 {
-  "platforms": ["apple", "android"],
-  "apple": { "modules": ["NativeToastModule"] },
-  "android": { "modules": ["com.nativetoast.NativeToastPackage"] }
+  "platforms": ["apple"],
+  "apple": {
+    "modules": ["NativeToastModule"]
+  }
 }
