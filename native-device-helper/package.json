@@ -1,0 +1,18 @@
+{
+  "name": "native-device-helper",
+  "version": "1.0.0",
+  "description": "Device and hardware information for iOS and Android",
+  "main": "index.ts",
+  "types": "index.ts",
+  "files": [
+    "index.ts",
+    "ios",
+    "android",
+    "expo-module.config.json"
+  ],
+  "peerDependencies": {
+    "expo": "*"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}

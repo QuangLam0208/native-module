@@ -1,0 +1,18 @@
+{
+  "name": "native-alert",
+  "version": "1.0.0",
+  "description": "Native alert with two or three buttons for iOS and Android",
+  "main": "index.ts",
+  "types": "index.ts",
+  "files": [
+    "index.ts",
+    "ios",
+    "android",
+    "expo-module.config.json"
+  ],
+  "peerDependencies": {
+    "expo": "*"
+  },
+  "license": "UNLICENSED",
+  "private": true
+}
