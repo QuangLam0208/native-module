@@ -2,7 +2,7 @@
 
 [← Mục lục tài liệu](README.md)
 
-Tài liệu mô tả cách viết phần Swift của module bằng Expo Modules API, với mã nguồn trích từ các module trong repo.
+Tài liệu mô tả cách viết phần Swift (iOS) của module; phần Android xem [Tầng native Android](08-android-layer.md). Phần Swift dùng Expo Modules API, với mã nguồn trích từ các module trong repo.
 
 ## Bảng API của Expo Modules
 

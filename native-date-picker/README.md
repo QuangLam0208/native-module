@@ -1,23 +1,25 @@
 # native-date-picker
 
-Native module chọn ngày và giờ trên iOS & Android:
-- **iOS:** Viết bằng Swift với Expo Modules API (picker bánh xe trong sheet trượt lên từ đáy màn hình).
-- **Android:** Viết bằng Java với React Native Bridge (`DatePickerDialog` & `TimePickerDialog` gốc của hệ thống).
+Native module chọn ngày và giờ trên iOS (Swift, Expo Modules API) và Android (Java, React Native module).
 
-Picker hiển thị dạng bánh xe (iOS) hoặc hộp thoại lịch/đồng hồ chuẩn Android. Module hỗ trợ chọn một giá trị hoặc một khoảng (từ – đến), với ba chế độ: ngày, giờ, ngày và giờ.
+Picker hiển thị dạng bánh xe trong một sheet trượt lên từ đáy màn hình. Module hỗ trợ chọn một giá trị hoặc một khoảng (từ – đến), với ba chế độ: ngày, giờ, ngày và giờ.
 
 ## Thông tin chung
 
 | Hạng mục | Giá trị |
 | :--- | :--- |
-| Nền tảng | iOS 15.1 trở lên · Android SDK 24 trở lên |
-| Ngôn ngữ | Swift (iOS) · Java (Android) |
-| Framework | Expo Modules API (iOS) · React Native Bridge (Android) |
-| Đã kiểm thử với | Expo SDK 57, React Native 0.86, simulator iOS 27.0, Android Emulator |
+| Nền tảng | iOS 15.1 trở lên, Android |
+| Ngôn ngữ | Swift (iOS), Java (Android) |
+| Framework | Expo Modules API |
+| Đã kiểm thử với | Expo SDK 57, React Native 0.86, simulator iOS 27.0, Samsung Galaxy J6+ (Android 10) |
 | Môi trường chạy | Development build hoặc bản release. Expo Go không hỗ trợ. |
 | Quyền hệ thống | Không yêu cầu |
 
 Trên nền tảng khác, module không tồn tại: `NativeDatePicker.isAvailable` là `false`, `show` và `showRange` không hiển thị gì, trả về `null` và không gọi callback nào.
+
+**Phạm vi đã kiểm thử trên Android:** chọn một ngày, khoảng ngày (một dialog Material, xác nhận và hủy). Các chế độ giờ, ngày giờ, hủy, `minimumDate` và `maximumDate` chưa kiểm thử trên thiết bị.
+
+**Phạm vi đã kiểm thử trên iOS:** sáu trường hợp chọn (một giá trị và khoảng, cho ba chế độ), bước nhảy phút, theme tối, nút hủy, và ràng buộc điểm kết thúc không nhỏ hơn điểm bắt đầu. Chưa kiểm thử: `minimumDate`, `maximumDate`, theme sáng, vuốt sheet để hủy, iPad, và các phiên bản iOS thấp hơn 27.
 
 ## Các trường hợp hỗ trợ
 
@@ -31,22 +33,16 @@ Trên nền tảng khác, module không tồn tại: `NativeDatePicker.isAvailab
 
 ```text
 native-date-picker/
-├── expo-module.config.json        Khai báo module cho Expo Autolinking (iOS)
-├── react-native.config.js         Khai báo module cho React Native CLI Autolinking (Android)
+├── expo-module.config.json     Khai báo module cho Autolinking
 ├── package.json
-├── index.ts                       API TypeScript
-├── ios/
-│   ├── NativeDatePicker.podspec
-│   ├── NativeDatePickerModule.swift   Khai báo module, hàm `show` và `showRange`
-│   ├── DatePickerOptions.swift        Kiểu dữ liệu nhận từ JS: chế độ, theme, tùy chọn
-│   └── DatePickerSheet.swift          Giao diện sheet và logic chọn khoảng
-└── android/
-    ├── build.gradle                   Cấu hình thư viện Android
-    └── src/main/
-        ├── AndroidManifest.xml
-        └── java/com/nativedatepicker/
-            ├── NativeDatePickerModule.java    Hiển thị DatePickerDialog & TimePickerDialog
-            └── NativeDatePickerPackage.java   ReactPackage cho Autolinking
+├── index.ts                    API TypeScript
+├── react-native.config.js      Cấu hình Autolinking cho Android
+├── android/                    Phần Android (Java): `NativeDatePickerModule.java`, `NativeDatePickerPackage.java`, theme trong `res/values/styles.xml`
+└── ios/
+    ├── NativeDatePicker.podspec
+    ├── NativeDatePickerModule.swift   Khai báo module, hàm `show` và `showRange`
+    ├── DatePickerOptions.swift        Kiểu dữ liệu nhận từ JS: chế độ, theme, tùy chọn
+    └── DatePickerSheet.swift          Giao diện sheet và logic chọn khoảng
 ```
 
 ## Cài đặt
@@ -55,10 +51,10 @@ native-date-picker/
 
 ### Cách 1: Cài như một dependency qua Git (khuyến nghị)
 
-Module nằm trong thư mục con `native-date-picker` của repo `native-module`, nên cần chỉ rõ đường dẫn bằng `path:`:
+Module nằm trong thư mục con `native-date-picker` của repo `react-native-module`, nên cần chỉ rõ đường dẫn bằng `path:`:
 
 ```bash
-pnpm add "github:loikimtrang/native-module#path:/native-date-picker"
+pnpm add "git+https://git.itzsolution.com/scm/tsa/react-native-module.git#path:/native-date-picker"
 ```
 
 Sau đó sinh lại thư mục native và build:
@@ -68,11 +64,7 @@ npx expo prebuild --clean
 ```
 
 ```bash
-# Chạy iOS:
 npx expo run:ios
-
-# Chạy Android:
-npx expo run:android
 ```
 
 Import theo tên package:
@@ -88,11 +80,11 @@ import { NativeDatePicker } from "native-date-picker"
 Dùng khi cần chỉnh sửa mã nguồn module ngay trong ứng dụng. Clone repo rồi sao chép thư mục `native-date-picker` vào `modules/` ở gốc ứng dụng:
 
 ```bash
-git clone https://github.com/loikimtrang/native-module.git
+git clone https://git.itzsolution.com/scm/tsa/react-native-module.git
 ```
 
 ```bash
-cp -R native-module/native-date-picker <thư-mục-ứng-dụng>/modules/native-date-picker
+cp -R react-native-module/native-date-picker <thư-mục-ứng-dụng>/modules/native-date-picker
 ```
 
 Sau đó prebuild và build như Cách 1. Import bằng đường dẫn tương đối:
@@ -101,7 +93,7 @@ Sau đó prebuild và build như Cách 1. Import bằng đường dẫn tương 
 import { NativeDatePicker } from "../modules/native-date-picker"
 ```
 
-> Cả hai cách đã được kiểm thử trên `react-native-base` với pnpm 11.13.0. Không dùng đồng thời hai cách trong cùng một ứng dụng.
+> Cách 2 đã được kiểm thử trên `react-native-base`. Cách 1 đã được kiểm thử với pnpm 11.13.0 khi module còn nằm ở một repo GitHub; lệnh cài từ repo này chưa được kiểm thử. Không dùng đồng thời hai cách trong cùng một ứng dụng.
 
 ## Sử dụng
 
@@ -267,7 +259,24 @@ Promise bị reject trong các trường hợp sau:
 | :--- | :--- |
 | `INVALID_RANGE` | `minimumDate` lớn hơn `maximumDate` |
 | `INVALID_MINUTE_INTERVAL` | `minuteInterval` không chia hết 60 hoặc lớn hơn 30 |
-| `NO_VIEW_CONTROLLER` | Ứng dụng chưa có màn hình nào để hiển thị picker |
+| `NO_VIEW_CONTROLLER` | (iOS) Ứng dụng chưa có màn hình nào để hiển thị picker |
+| `NO_ACTIVITY` | (Android) Chưa có Activity để hiển thị dialog |
+
+## Khác biệt giữa iOS và Android
+
+| Hạng mục | iOS | Android |
+| :--- | :--- | :--- |
+| Giao diện | Bánh xe trong sheet trượt từ đáy | `DatePickerDialog` và `TimePickerDialog` của hệ thống |
+| `theme` | Áp dụng | Bị bỏ qua, dialog theo theme của ứng dụng |
+| `minuteInterval` | Đổi bước nhảy bánh xe phút | Chỉ được kiểm tra hợp lệ, không đổi bước nhảy |
+| Khoảng ngày (`showRange`, `Mode.Date`) | Một sheet, hai nút Từ / Đến | **Một dialog Material** chọn cả khoảng: chạm ngày bắt đầu rồi ngày kết thúc. `startLabel` và `endLabel` không dùng |
+| Khoảng giờ hoặc ngày giờ | Một sheet | Hai picker nối nhau: chọn điểm bắt đầu rồi điểm kết thúc. Tiêu đề dạng `Tiêu đề · Từ` / `Tiêu đề · Đến` |
+| Chế độ `DateTime` | Một sheet | Dialog ngày rồi dialog giờ |
+| Điểm kết thúc | Không nhỏ hơn điểm bắt đầu | Dialog kết thúc lấy điểm bắt đầu làm giá trị nhỏ nhất |
+| Lỗi `NO_VIEW_CONTROLLER` | Có | Thay bằng `NO_ACTIVITY` |
+| Hủy | Nút hủy hoặc vuốt sheet | Nút hủy, chạm ngoài dialog hoặc nút Back. Hủy ở dialog nào cũng hủy cả khoảng |
+
+Khoảng ngày trên Android dùng thư viện `com.google.android.material`, module tự khai báo thư viện và một theme riêng (`NativeDatePicker.Calendar`) nên ứng dụng không cần đổi theme sang Material. Chữ nút bấm được viết hoa theo theme.
 
 ## Hành vi
 
@@ -283,11 +292,11 @@ Promise bị reject trong các trường hợp sau:
 
 | Hiện tượng | Nguyên nhân | Cách xử lý |
 | :--- | :--- | :--- |
-| `NativeDatePicker.isAvailable` là `false` trên iOS hoặc Android | Chưa prebuild lại hoặc chưa build native sau khi thêm module | Chạy `npx expo prebuild --clean` rồi build lại (`run:ios` hoặc `run:android`) |
+| `NativeDatePicker.isAvailable` là `false` trên iOS | Chưa prebuild lại hoặc chưa build native sau khi thêm module | Chạy `npx expo prebuild --clean` rồi build lại |
 | Sheet sáng trong khi ứng dụng tối | Sheet theo chế độ của thiết bị, ứng dụng có theme riêng | Truyền `theme` theo theme của ứng dụng |
 | Tiêu đề bị cắt bằng dấu ba chấm | Tiêu đề dài hơn khoảng trống giữa hai nút | Dùng tiêu đề ngắn, khoảng 20 ký tự trở xuống |
 | Promise reject với `INVALID_MINUTE_INTERVAL` | `minuteInterval` không hợp lệ | Dùng một trong các giá trị 1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30 |
 | Picker thứ hai không hiện | Gọi `show` khi picker trước chưa đóng | Chờ Promise của picker trước hoàn tất rồi mới gọi tiếp |
 | Jest báo `Cannot use import statement outside a module` tại `index.ts` của module | Jest không biên dịch mã TypeScript nằm trong `node_modules` | Thêm `native-date-picker` vào danh sách ngoại lệ của `transformIgnorePatterns` trong `jest.config.js` |
-| Sửa file Swift / Java nhưng không thấy thay đổi | Reload Metro không áp dụng thay đổi native | Build lại bằng `npx expo run:ios` hoặc `npx expo run:android` |
+| Sửa file Swift nhưng không thấy thay đổi | Reload Metro không áp dụng thay đổi native | Build lại bằng `npx expo run:ios` |
 | `pod install` lỗi `Unicode Normalization not appropriate for ASCII-8BIT` | Shell không dùng mã hóa UTF-8 | Đặt `export LANG=en_US.UTF-8` rồi chạy lại |

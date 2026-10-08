@@ -35,6 +35,14 @@ android {
   }
 }
 
+repositories {
+  google()
+  mavenCentral()
+  // Toasty is published on JitPack.
+  maven { url "https://jitpack.io" }
+}
+
 dependencies {
   implementation "com.facebook.react:react-android"
+  implementation "com.github.GrenderG:Toasty:1.5.2"
 }

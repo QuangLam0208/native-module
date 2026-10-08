@@ -1,6 +1,4 @@
 {
   "platforms": ["apple"],
-  "apple": {
-    "modules": ["DeviceHelperModule"]
-  }
+  "apple": { "modules": ["DeviceHelperModule"] }
 }

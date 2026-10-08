@@ -1,6 +1,4 @@
 {
   "platforms": ["apple"],
-  "apple": {
-    "modules": ["NativeAlertModule"]
-  }
+  "apple": { "modules": ["NativeAlertModule"] }
 }

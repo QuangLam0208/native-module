@@ -4,10 +4,10 @@ import android.content.Context;
 import android.net.ConnectivityManager;
 import android.net.Network;
 import android.net.NetworkCapabilities;
-import android.net.NetworkRequest;
 import android.os.Build;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.Promise;
@@ -24,8 +24,12 @@ public class NetworkStatusModule extends ReactContextBaseJavaModule {
 
   private final ReactApplicationContext reactContext;
   private final ConnectivityManager connectivityManager;
-  private ConnectivityManager.NetworkCallback networkCallback;
   private int listenerCount = 0;
+
+  // Theo dõi mạng mặc định, chỉ chạy khi có ít nhất một listener phía JS (giống iOS).
+  @Nullable private ConnectivityManager.NetworkCallback networkCallback;
+  @Nullable private Network currentNetwork;
+  @Nullable private String lastSignature;
 
   public NetworkStatusModule(ReactApplicationContext reactContext) {
     super(reactContext);
@@ -39,61 +43,52 @@ public class NetworkStatusModule extends ReactContextBaseJavaModule {
     return NAME;
   }
 
-  private WritableMap getCurrentNetworkState() {
+  /** Mô tả một mạng từ khả năng của nó. `caps` null nghĩa là không có kết nối. */
+  private static WritableMap describe(@Nullable NetworkCapabilities caps) {
+    boolean connected = caps != null && caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
+    String type = "none";
+    boolean expensive = false;
+    boolean constrained = false;
+
+    if (connected) {
+      type = "other";
+      if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
+        type = "wifi";
+      } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
+        type = "cellular";
+      } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
+        type = "ethernet";
+      }
+      expensive = !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
+      if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+        constrained = !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_CONGESTED);
+      }
+    }
+
     WritableMap state = Arguments.createMap();
-    if (connectivityManager == null) {
-      state.putBoolean("isConnected", false);
-      state.putString("type", "none");
-      state.putBoolean("isExpensive", false);
-      state.putBoolean("isConstrained", false);
-      return state;
-    }
-
-    Network activeNetwork = connectivityManager.getActiveNetwork();
-    if (activeNetwork == null) {
-      state.putBoolean("isConnected", false);
-      state.putString("type", "none");
-      state.putBoolean("isExpensive", false);
-      state.putBoolean("isConstrained", false);
-      return state;
-    }
-
-    NetworkCapabilities caps = connectivityManager.getNetworkCapabilities(activeNetwork);
-    if (caps == null) {
-      state.putBoolean("isConnected", false);
-      state.putString("type", "none");
-      state.putBoolean("isExpensive", false);
-      state.putBoolean("isConstrained", false);
-      return state;
-    }
-
-    boolean isConnected = caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_INTERNET);
-    String type = "other";
-    if (caps.hasTransport(NetworkCapabilities.TRANSPORT_WIFI)) {
-      type = "wifi";
-    } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_CELLULAR)) {
-      type = "cellular";
-    } else if (caps.hasTransport(NetworkCapabilities.TRANSPORT_ETHERNET)) {
-      type = "ethernet";
-    }
-
-    boolean isExpensive = !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_METERED);
-    boolean isConstrained = false;
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
-      isConstrained = !caps.hasCapability(NetworkCapabilities.NET_CAPABILITY_NOT_CONGESTED);
-    }
-
-    state.putBoolean("isConnected", isConnected);
+    state.putBoolean("isConnected", connected);
     state.putString("type", type);
-    state.putBoolean("isExpensive", isExpensive);
-    state.putBoolean("isConstrained", isConstrained);
+    state.putBoolean("isExpensive", expensive);
+    state.putBoolean("isConstrained", constrained);
     return state;
+  }
+
+  private static String signature(WritableMap state) {
+    return state.getBoolean("isConnected") + "|" + state.getString("type") + "|"
+        + state.getBoolean("isExpensive") + "|" + state.getBoolean("isConstrained");
+  }
+
+  @Nullable
+  private NetworkCapabilities activeCapabilities() {
+    if (connectivityManager == null) return null;
+    Network active = connectivityManager.getActiveNetwork();
+    return active == null ? null : connectivityManager.getNetworkCapabilities(active);
   }
 
   @ReactMethod
   public void getStatus(Promise promise) {
     try {
-      promise.resolve(getCurrentNetworkState());
+      promise.resolve(describe(activeCapabilities()));
     } catch (Exception e) {
       promise.reject("NETWORK_ERROR", e.getMessage(), e);
     }
@@ -102,43 +97,70 @@ public class NetworkStatusModule extends ReactContextBaseJavaModule {
   @ReactMethod
   public void addListener(String eventName) {
     listenerCount++;
-    if (listenerCount == 1 && networkCallback == null && connectivityManager != null) {
-      networkCallback = new ConnectivityManager.NetworkCallback() {
-        @Override
-        public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities networkCapabilities) {
-          emitStatusChange();
-        }
-
-        @Override
-        public void onLost(@NonNull Network network) {
-          emitStatusChange();
-        }
-
-        @Override
-        public void onAvailable(@NonNull Network network) {
-          emitStatusChange();
-        }
-      };
-      NetworkRequest request = new NetworkRequest.Builder().build();
-      connectivityManager.registerNetworkCallback(request, networkCallback);
-    }
+    if (listenerCount == 1) startObserving();
   }
 
   @ReactMethod
   public void removeListeners(Integer count) {
     listenerCount = Math.max(0, listenerCount - count);
-    if (listenerCount == 0 && networkCallback != null && connectivityManager != null) {
-      try {
-        connectivityManager.unregisterNetworkCallback(networkCallback);
-      } catch (Exception ignored) {}
-      networkCallback = null;
-    }
+    if (listenerCount == 0) stopObserving();
   }
 
-  private void emitStatusChange() {
-    if (listenerCount == 0) return;
+  @Override
+  public void invalidate() {
+    stopObserving();
+    super.invalidate();
+  }
+
+  private synchronized void startObserving() {
+    if (networkCallback != null || connectivityManager == null) return;
+
+    // Ghi nhớ trạng thái hiện tại: hệ thống báo ngay mạng đang dùng khi đăng ký, lần báo đó không phải thay đổi.
+    lastSignature = signature(describe(activeCapabilities()));
+
+    networkCallback = new ConnectivityManager.NetworkCallback() {
+      @Override
+      public void onAvailable(@NonNull Network network) {
+        currentNetwork = network;
+      }
+
+      @Override
+      public void onCapabilitiesChanged(@NonNull Network network, @NonNull NetworkCapabilities caps) {
+        currentNetwork = network;
+        emitIfChanged(describe(caps));
+      }
+
+      @Override
+      public void onLost(@NonNull Network network) {
+        // Mạng cũ mất sau khi đã chuyển sang mạng mới thì không phải mất kết nối.
+        if (network.equals(currentNetwork)) {
+          currentNetwork = null;
+          emitIfChanged(describe(null));
+        }
+      }
+    };
+    connectivityManager.registerDefaultNetworkCallback(networkCallback);
+  }
+
+  private synchronized void stopObserving() {
+    if (networkCallback == null || connectivityManager == null) return;
+    try {
+      connectivityManager.unregisterNetworkCallback(networkCallback);
+    } catch (IllegalArgumentException ignored) {
+      // Callback đã bị hủy đăng ký.
+    }
+    networkCallback = null;
+    currentNetwork = null;
+  }
+
+  // Hệ thống báo cả khi chỉ đổi cường độ sóng: chỉ gửi lên JS khi trạng thái thật sự đổi.
+  private synchronized void emitIfChanged(WritableMap state) {
+    String signature = signature(state);
+    if (signature.equals(lastSignature)) return;
+    lastSignature = signature;
+    if (listenerCount == 0 || !reactContext.hasActiveReactInstance()) return;
     reactContext
         .getJSModule(DeviceEventManagerModule.RCTDeviceEventEmitter.class)
-        .emit(EVENT_STATUS_CHANGE, getCurrentNetworkState());
+        .emit(EVENT_STATUS_CHANGE, state);
   }
 }

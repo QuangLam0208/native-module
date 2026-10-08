@@ -1,7 +1,7 @@
 {
   "name": "native-toast",
   "version": "1.0.0",
-  "description": "Native toast for iOS, built with Expo Modules API",
+  "description": "Native toast for iOS (Expo Modules API) and Android (React Native bridge with Toasty)",
   "main": "index.ts",
   "types": "index.ts",
   "files": [

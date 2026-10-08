@@ -1,6 +1,4 @@
 {
   "platforms": ["apple"],
-  "apple": {
-    "modules": ["NetworkStatusModule"]
-  }
+  "apple": { "modules": ["NetworkStatusModule"] }
 }
