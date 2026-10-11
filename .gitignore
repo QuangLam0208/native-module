@@ -7,7 +7,6 @@ pnpm-debug.log*
 
 # Android build outputs & caches
 .gradle/
-build/
 */android/build/
 */android/.gradle/
 local.properties

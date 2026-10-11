@@ -25,7 +25,7 @@ Bảng dưới đây xếp các module theo kiểu tương tác giữa JavaScrip
 
 ## Tài liệu phát triển
 
-Thư mục [docs](docs/README.md) mô tả cách viết một native module theo cách của repo này: kiến trúc, tầng Swift, tầng Android, tầng TypeScript, cách tích hợp vào ứng dụng, quy trình tạo module mới và xử lý lỗi.
+Thư mục [docs](docs/README.md) mô tả cách viết một native module theo cách của repo này: kiến trúc, tầng Swift, tầng Android, tầng TypeScript, cách tích hợp vào ứng dụng, quy trình tạo module mới, phát hành và xử lý lỗi.
 
 ## Yêu cầu
 
@@ -76,9 +76,9 @@ npx expo run:android
 
 Module được liên kết tự động qua Autolinking, không cần chỉnh sửa `Podfile`, `AppDelegate`, `Info.plist`, `MainApplication` hay `AndroidManifest.xml`.
 
-**Dự án dùng Jest** cần thêm tên các module đã cài vào danh sách ngoại lệ của `transformIgnorePatterns` trong `jest.config.js`, vì module phân phối dưới dạng mã TypeScript.
+**Dự án dùng Jest:** module phân phối JavaScript đã biên dịch sẵn (`build/`), nên Jest đọc được mà không cần cấu hình thêm.
 
-**Cập nhật module:** chạy lại lệnh cài, sau đó chạy `pod install` trong thư mục `ios/` của ứng dụng (hoặc prebuild lại) và build lại native. Trên Android, xóa `android/build/generated/autolinking` khi thêm module mới. Khởi động lại Metro (`--clear`) nếu đang chạy.
+**Cập nhật module:** `pnpm install` giữ nguyên commit đã ghi trong `pnpm-lock.yaml`. Muốn lấy bản mới của một module thì chạy `pnpm update <tên-module>`, commit lockfile, rồi chạy `pod install` trong thư mục `ios/` (hoặc prebuild lại) và build lại native. Trên Android, xóa `android/build/generated/autolinking` khi thêm module mới. Khởi động lại Metro (`--clear`) nếu đang chạy.
 
 ## Ví dụ sử dụng
 
@@ -170,15 +170,22 @@ const unsubscribe = NetworkStatus.addListener((state) => {
 <tên-module>/
 ├── expo-module.config.json   Khai báo module cho Autolinking
 ├── package.json              Tên package, entry point, danh sách file phân phối
-├── index.ts                  API TypeScript
+├── src/index.ts              API TypeScript
+├── tsconfig.json             Cấu hình biên dịch TypeScript
+├── build/                    JS đã biên dịch (`npm run build`), được commit kèm
 ├── react-native.config.js    Cấu hình Autolinking của React Native cho Android
+├── .gitignore                Bỏ qua `node_modules`
 ├── README.md
+├── CHANGELOG.md              Lịch sử phiên bản
+├── RELEASING.md              Các bước phát hành module
 ├── ios/
 │   ├── <TênPod>.podspec      Khai báo pod
 │   └── *.swift               Mã native iOS, mỗi file một trách nhiệm
 └── android/
     ├── build.gradle          Thư viện Android
-    └── src/main/java/...     Module Java và ReactPackage
+    └── src/main/
+        ├── AndroidManifest.xml   Quyền hệ thống (nếu cần)
+        └── java/...              Module Java và ReactPackage
 ```
 
-Khi thêm module mới, tạo một thư mục theo cấu trúc trên, rồi bổ sung module vào bảng danh sách và mục ví dụ của tài liệu này.
+Khi thêm module mới, tạo một thư mục theo cấu trúc trên (chi tiết tại [docs](docs/README.md)), rồi bổ sung module vào bảng danh sách và mục ví dụ của tài liệu này. Cách phát hành và đánh số phiên bản nằm tại [docs/09-releasing.md](docs/09-releasing.md).

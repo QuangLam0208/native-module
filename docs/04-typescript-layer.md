@@ -2,9 +2,9 @@
 
 [← Mục lục tài liệu](README.md)
 
-Tài liệu mô tả khuôn mẫu chung của file `index.ts` và các quy ước mà mọi module tuân theo.
+Tài liệu mô tả khuôn mẫu chung của file `src/index.ts` và các quy ước mà mọi module tuân theo.
 
-`index.ts` là API công khai của module. Mọi module tuân theo cùng một khuôn mẫu.
+`src/index.ts` là API công khai của module. Mọi module tuân theo cùng một khuôn mẫu. File này được `tsc` biên dịch ra `build/index.js` và `build/index.d.ts`; `package.json` trỏ `main` và `types` vào đó, xem [Cấu trúc và khai báo module](02-module-structure.md).
 
 ## Khuôn mẫu chung
 

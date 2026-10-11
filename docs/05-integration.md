@@ -39,7 +39,9 @@ pnpm ghi mã commit đã cài vào `pnpm-lock.yaml`, nên mọi máy trong dự 
 
 ## Cấu hình Jest
 
-Module phân phối dưới dạng mã TypeScript. Jest mặc định không biên dịch mã trong `node_modules`, nên tên mỗi module phải được thêm vào danh sách ngoại lệ của `transformIgnorePatterns` trong `jest.config.js`:
+Module phân phối JavaScript đã biên dịch sẵn (`build/index.js`, dạng CommonJS), nên Jest đọc được mà không cần cấu hình thêm.
+
+Chỉ khi cài một bản cũ chưa có `build/` (`main` trỏ vào `index.ts`) thì Jest báo `Cannot use import statement outside a module`. Khi đó cập nhật module lên bản có `build/`, hoặc thêm tên module vào `transformIgnorePatterns` trong `jest.config.js`:
 
 ```js
 transformIgnorePatterns: [
@@ -47,16 +49,31 @@ transformIgnorePatterns: [
 ],
 ```
 
+## Truy cập repo riêng
+
+Nếu repo là riêng tư, máy cài (và máy CI) phải xác thực được với git:
+
+| Cách | Ghi chú |
+| :--- | :--- |
+| Tài khoản và Personal Access Token qua HTTPS | Tạo token chỉ đọc, nhập một lần khi git hỏi mật khẩu; Keychain nhớ cho mọi dự án trên máy |
+| SSH key | Đổi URL sang `git+ssh://git@...`; public key thêm vào tài khoản hoặc deploy key của repo |
+| CI | Đặt token trong biến bí mật của CI |
+
+**Không ghi tài khoản, mật khẩu hay token vào `package.json` hoặc `pnpm-lock.yaml`**, vì hai file này được commit.
+
 ## Quy trình cập nhật module
 
 | Bước | Nơi thực hiện | Thao tác |
 | :--- | :--- | :--- |
-| 1 | Repo `react-native-module` | Sửa mã nguồn, commit và push |
-| 2 | Ứng dụng | Chạy lại lệnh `pnpm add` để lấy commit mới |
-| 3 | Ứng dụng | Chạy `pod install` (hoặc prebuild) rồi build lại native |
-| 4 | Ứng dụng | Khởi động lại Metro |
+| 1 | Repo `react-native-module` | Sửa `src/`, `ios/`, `android/`; chạy `npm run build`; commit và push (xem [Phát hành](09-releasing.md)) |
+| 2 | Ứng dụng | `pnpm update <tên-module>` để lấy commit mới; hoặc `pnpm add` lại với URL |
+| 3 | Ứng dụng | Commit `package.json` và `pnpm-lock.yaml` |
+| 4 | Ứng dụng | Chạy `pod install` (hoặc prebuild) và build lại native |
+| 5 | Ứng dụng | Khởi động lại Metro (`--clear`) |
 
-Bước 3 là bắt buộc với mọi lần cập nhật, kể cả khi chỉ đổi mã TypeScript: đường dẫn cài đặt của module trong `node_modules/.pnpm` chứa mã commit, nên pod phải được trỏ lại sang đường dẫn mới.
+`pnpm install` thông thường giữ nguyên commit đã ghi trong lockfile, nên **không tự lên bản mới**; phải dùng `pnpm update`.
+
+Bước 4 là bắt buộc với mọi lần cập nhật, kể cả khi chỉ đổi mã TypeScript: đường dẫn cài đặt của module trong `node_modules/.pnpm` chứa mã commit, nên pod phải được trỏ lại sang đường dẫn mới.
 
 ## Phát triển module trước khi push
 
@@ -66,7 +83,7 @@ Trong lúc viết module, cài tạm từ thư mục repo trên máy để thử
 pnpm add "file:<đường-dẫn-tới-repo>/native-network-status"
 ```
 
-Sau mỗi lần sửa mã trong repo, chạy lại lệnh trên để sao chép bản mới vào `node_modules`.
+Sau mỗi lần sửa mã trong repo, chạy `npm run build` trong thư mục module (để `build/` khớp `src/`), rồi chạy lại lệnh trên để sao chép bản mới vào `node_modules`.
 
 ## Quy định tích hợp
 
@@ -78,7 +95,7 @@ Sau mỗi lần sửa mã trong repo, chạy lại lệnh trên để sao chép 
 | Thay đổi mã Swift hoặc Java | Bắt buộc build lại native. Reload Metro không áp dụng thay đổi. |
 | Thêm file Swift mới | Chạy lại `pod install` (hoặc prebuild) trước khi build. |
 | Thêm module mới trên Android | Xóa `android/build/generated/autolinking` rồi build lại, vì Expo lưu kết quả quét module theo mã băm của `package.json`. |
-| Khởi động lại Metro sau khi đổi `index.ts` của module | `npx expo start --dev-client --clear` để Metro bỏ cache cũ. |
+| Khởi động lại Metro sau khi đổi `src/index.ts` của module | `npx expo start --dev-client --clear` để Metro bỏ cache cũ. |
 | Chỉnh sửa module | Thực hiện tại repo `react-native-module`. Không sửa trực tiếp trong `node_modules`. |
 
 **Kiểm tra Autolinking đã nhận module:**

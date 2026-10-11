@@ -35,7 +35,9 @@ Trên nền tảng khác, module không tồn tại: `NativeDatePicker.isAvailab
 native-date-picker/
 ├── expo-module.config.json     Khai báo module cho Autolinking
 ├── package.json
-├── index.ts                    API TypeScript
+├── src/index.ts                API TypeScript
+├── tsconfig.json               Cấu hình biên dịch TypeScript
+├── build/                      JS đã biên dịch (`npm run build`), được commit kèm
 ├── react-native.config.js      Cấu hình Autolinking cho Android
 ├── android/                    Phần Android (Java): `NativeDatePickerModule.java`, `NativeDatePickerPackage.java`, theme trong `res/values/styles.xml`
 └── ios/
@@ -297,6 +299,10 @@ Khoảng ngày trên Android dùng thư viện `com.google.android.material`, mo
 | Tiêu đề bị cắt bằng dấu ba chấm | Tiêu đề dài hơn khoảng trống giữa hai nút | Dùng tiêu đề ngắn, khoảng 20 ký tự trở xuống |
 | Promise reject với `INVALID_MINUTE_INTERVAL` | `minuteInterval` không hợp lệ | Dùng một trong các giá trị 1, 2, 3, 4, 5, 6, 10, 12, 15, 20, 30 |
 | Picker thứ hai không hiện | Gọi `show` khi picker trước chưa đóng | Chờ Promise của picker trước hoàn tất rồi mới gọi tiếp |
-| Jest báo `Cannot use import statement outside a module` tại `index.ts` của module | Jest không biên dịch mã TypeScript nằm trong `node_modules` | Thêm `native-date-picker` vào danh sách ngoại lệ của `transformIgnorePatterns` trong `jest.config.js` |
+| Jest báo `Cannot use import statement outside a module` tại `index.ts` của module | Đang cài bản cũ chưa có `build/` (`main` trỏ vào `index.ts`) | Cập nhật lên bản có `build/`; hoặc thêm module vào `transformIgnorePatterns` |
 | Sửa file Swift nhưng không thấy thay đổi | Reload Metro không áp dụng thay đổi native | Build lại bằng `npx expo run:ios` |
 | `pod install` lỗi `Unicode Normalization not appropriate for ASCII-8BIT` | Shell không dùng mã hóa UTF-8 | Đặt `export LANG=en_US.UTF-8` rồi chạy lại |
+
+## Phát hành
+
+Sửa module xong cần phát hành bản mới để ứng dụng dùng được. Các bước, quy ước phiên bản và bảng kiểm nằm trong [RELEASING.md](RELEASING.md). Lịch sử thay đổi nằm trong [CHANGELOG.md](CHANGELOG.md).

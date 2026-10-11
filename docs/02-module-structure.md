@@ -10,21 +10,29 @@ Mỗi module là một thư mục trong repo `react-native-module`:
 react-native-module/
 ├── README.md
 ├── native-toast/
-│   ├── expo-module.config.json   Khai báo module cho Autolinking
-│   ├── package.json              Tên package, entry point, danh sách file phân phối
-│   ├── index.ts                  API TypeScript
-│   ├── README.md
-│   ├── react-native.config.js    Cấu hình Autolinking của React Native cho Android
+│   ├── expo-module.config.json   Khai báo module cho Autolinking (iOS)
+│   ├── react-native.config.js    Khai báo module cho Autolinking (Android)
+│   ├── package.json              Tên, phiên bản, entry point, danh sách file phân phối, script build
+│   ├── tsconfig.json             Cấu hình biên dịch TypeScript
+│   ├── .gitignore                Bỏ qua `node_modules`
+│   ├── src/index.ts              API TypeScript (nguồn, sửa ở đây)
+│   ├── build/                    JS đã biên dịch từ `src/` (sinh bằng `npm run build`, được commit)
+│   ├── README.md                 Cách dùng và API của module
+│   ├── CHANGELOG.md              Lịch sử phiên bản
+│   ├── RELEASING.md              Các bước phát hành module
 │   ├── ios/
 │   │   ├── NativeToast.podspec       Khai báo pod
 │   │   ├── NativeToastModule.swift   Khai báo module và hàm `show`
 │   │   ├── ToastType.swift           Các loại toast và màu nền
 │   │   └── ToastView.swift           Giao diện và hiệu ứng của toast
 │   └── android/
-│       ├── build.gradle              Thư viện Android
-│       └── src/main/java/com/nativetoast/
-│           ├── NativeToastModule.java    Khai báo module và hàm `show`
-│           └── NativeToastPackage.java   ReactPackage đăng ký module
+│       ├── build.gradle              Thư viện Android, namespace, SDK
+│       └── src/main/
+│           ├── AndroidManifest.xml       Quyền hệ thống (nếu cần), gộp tự động vào ứng dụng
+│           ├── res/                      Tài nguyên riêng (nếu cần, ví dụ theme)
+│           └── java/com/nativetoast/
+│               ├── NativeToastModule.java    Khai báo module và hàm `show`
+│               └── NativeToastPackage.java   ReactPackage đăng ký module
 ├── native-alert/
 ├── native-date-picker/
 ├── native-device-helper/
@@ -35,24 +43,104 @@ react-native-module/
 
 **Quy ước chia file Swift:** một file khai báo module (`...Module.swift`), các file còn lại mỗi file một trách nhiệm (kiểu dữ liệu, giao diện, lớp đọc dữ liệu). Class nằm ở file riêng phải để mức truy cập `internal` (mặc định) để file module gọi được; chỉ class module cần `public`.
 
+## Các file bắt buộc và tùy chọn
+
+| File hoặc thư mục | Bắt buộc | Vai trò |
+| :--- | :--- | :--- |
+| `package.json` | Có | Tên, phiên bản, `main`, `files`, script `build` |
+| `src/index.ts` | Có | API TypeScript, nơi sửa code JS |
+| `build/` | Có | JS biên dịch sẵn; `main` của `package.json` trỏ vào đây. Phải commit |
+| `tsconfig.json` | Có | Cấu hình `tsc`: đọc `src/`, ghi ra `build/` |
+| `expo-module.config.json` | Có | Khai báo module iOS cho Autolinking của Expo |
+| `ios/` (podspec và Swift) | Có | Phần iOS |
+| `react-native.config.js` | Có nếu có Android | Khai báo module Android cho Autolinking của React Native |
+| `android/` (gradle, Java, manifest) | Có nếu có Android | Phần Android |
+| `README.md` | Có | Cách dùng, API, phạm vi đã kiểm thử |
+| `CHANGELOG.md`, `RELEASING.md` | Nên có | Lịch sử phiên bản và các bước phát hành |
+| `.gitignore` | Nên có | Bỏ `node_modules` để không commit nhầm |
+
 ## `package.json`
 
-`name` là tên dùng khi import. `main` trỏ thẳng tới mã nguồn TypeScript, Metro biên dịch khi bundle nên module không cần bước build riêng. `files` phải liệt kê `ios`, `android`, `expo-module.config.json` và `react-native.config.js`, nếu thiếu thì bản cài về không liên kết được native.
+`name` là tên dùng khi import. `main` và `types` trỏ vào `build/`, là JavaScript đã biên dịch từ `src/` nên Jest và mọi công cụ đọc được mà không cần cấu hình thêm. `files` phải liệt kê `build`, `ios`, `android`, `expo-module.config.json` và `react-native.config.js`, thiếu thì bản cài về không chạy hoặc không liên kết được native. Script `prepack` chạy `tsc` khi đóng gói (`npm pack`, `npm publish`); cài trực tiếp từ git thì không chạy bước này, nên `build/` phải được commit sẵn.
 
 ```json
 {
   "name": "native-toast",
   "version": "1.0.0",
   "description": "Native toast for iOS and Android",
-  "main": "index.ts",
-  "types": "index.ts",
-  "files": ["index.ts", "ios", "android", "expo-module.config.json", "react-native.config.js"],
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
+  "files": [
+    "build",
+    "ios",
+    "android",
+    "expo-module.config.json",
+    "react-native.config.js"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "prepack": "tsc"
+  },
   "peerDependencies": {
     "expo": "*"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
   },
   "license": "UNLICENSED",
   "private": true
 }
+```
+
+`peerDependencies.expo` được `npm install` tự cài khi chạy build trong thư mục module, nên không cần khai báo thêm `react-native` hay kiểu của chúng. Số `version` là nguồn chính của phiên bản; số `s.version` trong podspec phải khớp (xem [Phát hành](09-releasing.md)).
+
+## `tsconfig.json`
+
+```json
+{
+  "compilerOptions": {
+    "target": "ES2020",
+    "module": "Node16",
+    "moduleResolution": "Node16",
+    "lib": ["ES2020"],
+    "jsx": "react",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "declaration": true,
+    "rootDir": "src",
+    "outDir": "build"
+  },
+  "include": ["src"]
+}
+```
+
+`module: Node16` cho ra CommonJS (`require`), nên Jest đọc được file trong `node_modules`. `declaration: true` sinh `build/index.d.ts` để editor vẫn gợi ý kiểu. Cả năm module dùng cùng một `tsconfig.json`.
+
+Sinh `build/` bằng:
+
+```bash
+npm install
+```
+
+```bash
+npm run build
+```
+
+`npm install` chỉ cần lần đầu. Không sửa tay `build/`; sửa `src/index.ts` rồi build lại.
+
+## `react-native.config.js`
+
+Báo cho Autolinking của React Native biết module chỉ có Android (iOS đã do Expo quản lý):
+
+```js
+module.exports = {
+  dependency: {
+    platforms: {
+      ios: null,
+    },
+  },
+};
 ```
 
 ## `expo-module.config.json`

@@ -34,7 +34,9 @@ native-alert/
 ├── expo-module.config.json       Khai báo module cho Expo Autolinking (iOS)
 ├── react-native.config.js        Khai báo module cho React Native Autolinking (Android)
 ├── package.json
-├── index.ts                      API TypeScript, chọn module native theo nền tảng
+├── src/index.ts                  API TypeScript, chọn module native theo nền tảng
+├── tsconfig.json                 Cấu hình biên dịch TypeScript
+├── build/                        JS đã biên dịch (`npm run build`), được commit kèm
 ├── ios/
 │   ├── NativeAlert.podspec
 │   ├── NativeAlertModule.swift   Khai báo module và hàm `show`
@@ -247,6 +249,10 @@ Trên Android, alert đóng bằng chạm ra ngoài hoặc nút Back vẫn gọi
 | Android không nhận module dù đã chép vào `modules/` | Nhớ đệm `android/build/generated/autolinking` còn danh sách cũ | Xóa thư mục đó rồi build lại |
 | Màn dùng module báo `TypeError: undefined is not a function` | Metro đang dùng bản `index.ts` cũ | Khởi động lại Metro với `--clear` |
 | Alert thứ hai không hiện | Gọi `show` khi alert trước chưa đóng | Chờ Promise của alert trước hoàn tất rồi mới gọi tiếp |
-| Jest báo `Cannot use import statement outside a module` tại `index.ts` của module | Jest không biên dịch mã TypeScript nằm trong `node_modules` | Thêm `native-alert` vào danh sách ngoại lệ của `transformIgnorePatterns` trong `jest.config.js` |
+| Jest báo `Cannot use import statement outside a module` tại `index.ts` của module | Đang cài bản cũ chưa có `build/` (`main` trỏ vào `index.ts`) | Cập nhật lên bản có `build/`; hoặc thêm module vào `transformIgnorePatterns` |
 | Sửa file Swift hoặc Java nhưng không thấy thay đổi | Reload Metro không áp dụng thay đổi native | Build lại bằng `npx expo run:ios` hoặc `npx expo run:android` |
 | `pod install` lỗi `Unicode Normalization not appropriate for ASCII-8BIT` | Shell không dùng mã hóa UTF-8 | Đặt `export LANG=en_US.UTF-8` rồi chạy lại |
+
+## Phát hành
+
+Sửa module xong cần phát hành bản mới để ứng dụng dùng được. Các bước, quy ước phiên bản và bảng kiểm nằm trong [RELEASING.md](RELEASING.md). Lịch sử thay đổi nằm trong [CHANGELOG.md](CHANGELOG.md).

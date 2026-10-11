@@ -70,14 +70,14 @@ Mỗi module cần một màn hình trong ứng dụng để gọi từng hàm v
 | Build lỗi không tìm thấy file Swift của module sau khi cập nhật | Pod còn trỏ tới đường dẫn của commit cũ | Chạy `pod install` rồi build lại |
 | Metro báo `spawn ... ENOENT` sau khi cài hoặc cập nhật package | Tiến trình Metro đang chạy còn giữ đường dẫn cũ trong `node_modules` | Khởi động lại Metro |
 | `pod install` lỗi `Unicode Normalization not appropriate for ASCII-8BIT` | Shell không dùng mã hóa UTF-8 | Đặt `export LANG=en_US.UTF-8` rồi chạy lại |
-| Jest báo `Cannot use import statement outside a module` tại `index.ts` của module | Jest không biên dịch mã TypeScript nằm trong `node_modules` | Thêm tên module vào `transformIgnorePatterns` |
+| Jest báo `Cannot use import statement outside a module` tại `index.ts` của module | Đang cài bản cũ chưa có `build/` (`main` trỏ vào `index.ts`) | Cập nhật lên bản có `build/`; hoặc thêm tên module vào `transformIgnorePatterns` |
 
 ### Android
 
 | Hiện tượng | Nguyên nhân | Cách xử lý |
 | :--- | :--- | :--- |
 | `isAvailable` là `false` trên Android sau khi thêm module | `autolinking.json` cũ chưa có module | Xóa `android/build/generated/autolinking` rồi build lại |
-| `TypeError: undefined is not a function` khi gọi module | Metro còn cache `index.ts` cũ | Khởi động lại Metro với `--clear` |
+| `TypeError: undefined is not a function` khi gọi module | Metro còn cache `src/index.ts` cũ | Khởi động lại Metro với `--clear` |
 | `INSTALL_FAILED_UPDATE_INCOMPATIBLE` | Máy đang có bản cùng package ký bằng khóa khác | Gỡ bản cũ bằng `adb uninstall <package>` rồi cài lại |
 | `No space left on device` khi build | Ổ đĩa đầy do build nhiều kiến trúc | Giải phóng ổ đĩa, đặt `ORG_GRADLE_PROJECT_reactNativeArchitectures` theo máy thử |
 | Không tìm thấy thiết bị theo serial | `expo run:android --device` nhận tên model | Dùng tên model (ví dụ `SM_J610F`) |
@@ -85,6 +85,15 @@ Mỗi module cần một màn hình trong ứng dụng để gọi từng hàm v
 | Crash `requires your app theme to be Theme.MaterialComponents` | Dùng thành phần Material với theme ứng dụng là AppCompat | Dùng theme riêng của module (xem `NativeDatePicker.Calendar`) |
 | Không tải được thư viện từ JitPack | Thiếu kho `https://jitpack.io` | Thêm vào `repositories` của `android/build.gradle` module |
 | Dialog hệ thống không hiện trong `uiautomator dump` | Dump không đọc được cửa sổ dialog khi đang mở | Dùng `dumpsys window` để biết cửa sổ đang lấy focus |
+
+### Biên dịch TypeScript (`build/`)
+
+| Hiện tượng | Nguyên nhân | Cách xử lý |
+| :--- | :--- | :--- |
+| `tsc: command not found` | Chưa chạy `npm install` hoặc đã xóa `node_modules` | `npm install` rồi `npm run build` trong thư mục module |
+| Ứng dụng nhận code JS cũ dù đã sửa `src/` | Quên chạy `npm run build` trước khi commit | Chạy `npm run build`, commit `build/` |
+| `Cannot find module 'expo'` khi build | Chạy `tsc` khi chưa cài `node_modules` của module | `npm install` (npm tự cài `expo` từ `peerDependencies`) |
+| Có `package-lock.json` hay `node_modules` trong `git status` | `npm install` sinh ra | Không commit; `node_modules` đã nằm trong `.gitignore`, xóa `package-lock.json` |
 
 ### Biên dịch Swift
 

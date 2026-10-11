@@ -12,7 +12,7 @@ Một lời gọi từ màn hình React Native đi qua ba tầng:
 Màn hình của ứng dụng               NativeToast.show("Đã lưu", NativeToast.Type.Success)
         │
         ▼
-Tầng TypeScript (index.ts)          Đặt giá trị mặc định, đổi kiểu dữ liệu, gọi callback
+Tầng TypeScript (src/index.ts)      Đặt giá trị mặc định, đổi kiểu dữ liệu, gọi callback
         │
         ▼
 Tầng native                         Thực thi bằng API của hệ điều hành, trả kết quả hoặc phát sự kiện
@@ -23,7 +23,7 @@ Tầng native                         Thực thi bằng API của hệ điều h
 | Tầng | Vị trí | Trách nhiệm |
 | :--- | :--- | :--- |
 | Màn hình | Ứng dụng | Gọi API của module, không biết gì về native |
-| TypeScript | `index.ts` của module | API công khai: kiểu dữ liệu, hằng số, giá trị mặc định, callback |
+| TypeScript | `src/index.ts` của module (biên dịch ra `build/`) | API công khai: kiểu dữ liệu, hằng số, giá trị mặc định, callback |
 | Native | `ios/` và `android/` của module | Làm việc với hệ điều hành; hai nền tảng dùng cùng tên module và tên hàm |
 
 **Ba loại thread liên quan:**

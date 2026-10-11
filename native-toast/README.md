@@ -34,7 +34,9 @@ native-toast/
 ├── expo-module.config.json       Khai báo module cho Expo Autolinking (iOS)
 ├── react-native.config.js        Khai báo module cho React Native Autolinking (Android)
 ├── package.json
-├── index.ts                      API TypeScript, chọn module native theo nền tảng
+├── src/index.ts                  API TypeScript, chọn module native theo nền tảng
+├── tsconfig.json                 Cấu hình biên dịch TypeScript
+├── build/                        JS đã biên dịch (`npm run build`), được commit kèm
 ├── ios/
 │   ├── NativeToast.podspec
 │   ├── NativeToastModule.swift   Khai báo module và hàm `show`
@@ -237,7 +239,11 @@ Với `NativeToast.Duration.Short` (2200) và `NativeToast.Duration.Long` (3500)
 | Toast Android hiện lâu hơn hoặc ngắn hơn mong đợi | Android chỉ có hai mức thời lượng | Dùng `NativeToast.Duration.Short` hoặc `Long` |
 | Cài APK báo `INSTALL_FAILED_UPDATE_INCOMPATIBLE` | Máy đã có ứng dụng cùng mã gói nhưng ký bằng khóa khác | Đổi mã gói của bản build thử, hoặc gỡ ứng dụng cũ (xóa dữ liệu của ứng dụng đó) |
 | Build Android lỗi `No space left on device` | Ổ đĩa đầy trong lúc Gradle biên dịch | Giải phóng ổ đĩa, hoặc chỉ build một kiến trúc CPU (xem Yêu cầu riêng của Android) |
-| Jest báo `Cannot use import statement outside a module` tại `index.ts` của module | Jest không biên dịch mã TypeScript nằm trong `node_modules` | Thêm `native-toast` vào danh sách ngoại lệ của `transformIgnorePatterns` trong `jest.config.js` |
+| Jest báo `Cannot use import statement outside a module` tại `index.ts` của module | Đang cài bản cũ chưa có `build/` (`main` trỏ vào `index.ts`) | Cập nhật lên bản có `build/`; hoặc thêm module vào `transformIgnorePatterns` |
 | Sửa file Swift hoặc Java nhưng không thấy thay đổi | Reload Metro không áp dụng thay đổi native | Build lại bằng `npx expo run:ios` hoặc `npx expo run:android` |
 | `pod install` lỗi `Unicode Normalization not appropriate for ASCII-8BIT` | Shell không dùng mã hóa UTF-8 | Đặt `export LANG=en_US.UTF-8` rồi chạy lại |
 | Promise reject với `NO_WINDOW` | Gọi khi ứng dụng chưa có cửa sổ hiển thị | Gọi sau khi màn hình đầu tiên đã render |
+
+## Phát hành
+
+Sửa module xong cần phát hành bản mới để ứng dụng dùng được. Các bước, quy ước phiên bản và bảng kiểm nằm trong [RELEASING.md](RELEASING.md). Lịch sử thay đổi nằm trong [CHANGELOG.md](CHANGELOG.md).

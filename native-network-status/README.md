@@ -27,7 +27,9 @@ Trên nền tảng khác, module không tồn tại: `NetworkStatus.isAvailable`
 native-network-status/
 ├── expo-module.config.json     Khai báo module cho Autolinking
 ├── package.json
-├── index.ts                    API TypeScript
+├── src/index.ts                API TypeScript
+├── tsconfig.json               Cấu hình biên dịch TypeScript
+├── build/                      JS đã biên dịch (`npm run build`), được commit kèm
 ├── react-native.config.js      Cấu hình Autolinking cho Android
 ├── android/                    Phần Android (Java): `NetworkStatusModule.java`, `NetworkStatusPackage.java`
 └── ios/
@@ -190,6 +192,10 @@ Cả hai nền tảng đều chỉ phát sự kiện khi trạng thái khác l�
 | `NetworkStatus.isAvailable` là `false` trên iOS | Chưa prebuild lại hoặc chưa build native sau khi thêm module | Chạy `npx expo prebuild --clean` rồi build lại |
 | Listener không được gọi lúc vừa đăng ký | Listener chỉ nhận thay đổi, không nhận trạng thái hiện tại | Đọc trạng thái ban đầu bằng `getStatus` |
 | `isConnected` là `true` nhưng gọi API thất bại | Có đường kết nối nhưng không vào được internet | Xử lý lỗi của lời gọi API, không chỉ dựa vào `isConnected` |
-| Jest báo `Cannot use import statement outside a module` tại `index.ts` của module | Jest không biên dịch mã TypeScript nằm trong `node_modules` | Thêm `native-network-status` vào danh sách ngoại lệ của `transformIgnorePatterns` trong `jest.config.js` |
+| Jest báo `Cannot use import statement outside a module` tại `index.ts` của module | Đang cài bản cũ chưa có `build/` (`main` trỏ vào `index.ts`) | Cập nhật lên bản có `build/`; hoặc thêm module vào `transformIgnorePatterns` |
 | Sửa file Swift nhưng không thấy thay đổi | Reload Metro không áp dụng thay đổi native | Build lại bằng `npx expo run:ios` |
 | `pod install` lỗi `Unicode Normalization not appropriate for ASCII-8BIT` | Shell không dùng mã hóa UTF-8 | Đặt `export LANG=en_US.UTF-8` rồi chạy lại |
+
+## Phát hành
+
+Sửa module xong cần phát hành bản mới để ứng dụng dùng được. Các bước, quy ước phiên bản và bảng kiểm nằm trong [RELEASING.md](RELEASING.md). Lịch sử thay đổi nằm trong [CHANGELOG.md](CHANGELOG.md).

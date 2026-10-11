@@ -2,10 +2,10 @@
   "name": "native-alert",
   "version": "1.0.0",
   "description": "Native alert with two or three buttons for iOS and Android",
-  "main": "index.ts",
-  "types": "index.ts",
+  "main": "build/index.js",
+  "types": "build/index.d.ts",
   "files": [
-    "index.ts",
+    "build",
     "ios",
     "android",
     "expo-module.config.json",
@@ -15,5 +15,12 @@
     "expo": "*"
   },
   "license": "UNLICENSED",
-  "private": true
+  "private": true,
+  "scripts": {
+    "build": "tsc",
+    "prepack": "tsc"
+  },
+  "devDependencies": {
+    "typescript": "^5.9.0"
+  }
 }
